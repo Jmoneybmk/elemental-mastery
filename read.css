@@ -404,6 +404,16 @@
     text-align: center;
 }
 
+.comment-error {
+    background: rgba(230, 57, 70, 0.1);
+    border: 1px solid rgba(230, 57, 70, 0.3);
+    color: #e63946;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
 /* Reading Progress Bar */
 .reading-progress {
     position: fixed;

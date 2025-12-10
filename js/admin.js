@@ -342,11 +342,55 @@ async function loadCommentsManageList() {
 }
 
 async function deleteComment(id) {
-    if (confirm('This will generate a new comments.json file without this comment. You must upload it to GitHub to complete the deletion.')) {
-        const comments = await commentsManager.fetchComments();
-        const updatedComments = comments.filter(c => c.id !== id);
-        commentsManager.downloadCommentsJSON(updatedComments);
-        showMessage('success', 'Download the new comments.json and upload it to GitHub to complete the deletion.');
-        showUploadInstructions('comments');
+    if (confirm('Delete this comment? This will immediately remove it from the website.')) {
+        try {
+            const comments = await commentsManager.fetchComments();
+            const updatedComments = comments.filter(c => c.id !== id);
+            
+            // If GitHub is configured, use API
+            if (commentsManager.isConfigured()) {
+                // Get current file SHA
+                const fileResponse = await fetch(
+                    `https://api.github.com/repos/${commentsManager.githubUsername}/${commentsManager.repoName}/contents/${commentsManager.commentsFile}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${commentsManager.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                const fileData = await fileResponse.json();
+                const content = btoa(JSON.stringify(updatedComments, null, 2));
+                
+                // Commit deletion
+                await fetch(
+                    `https://api.github.com/repos/${commentsManager.githubUsername}/${commentsManager.repoName}/contents/${commentsManager.commentsFile}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${commentsManager.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        },
+                        body: JSON.stringify({
+                            message: 'Delete comment',
+                            content: content,
+                            sha: fileData.sha
+                        })
+                    }
+                );
+                
+                showMessage('success', 'Comment deleted successfully!');
+                commentsManager.clearCache();
+                await loadCommentsManageList();
+            } else {
+                // Fallback: download JSON
+                commentsManager.downloadCommentsJSON(updatedComments);
+                showMessage('success', 'Download the new comments.json and upload it to GitHub to complete the deletion.');
+                showUploadInstructions('comments');
+            }
+        } catch (error) {
+            showMessage('error', 'Failed to delete comment: ' + error.message);
+        }
     }
 }

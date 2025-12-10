@@ -178,6 +178,7 @@ async function loadComments(chapterId) {
 
 function setupCommentForm() {
     const form = document.getElementById('commentForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
     
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -187,32 +188,49 @@ function setupCommentForm() {
         
         if (!chapterId) return;
         
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Posting...';
+        
         const email = document.getElementById('commentEmail').value;
         const displayName = document.getElementById('commentName').value;
         const commentText = document.getElementById('commentText').value;
         
-        // Create comment data
-        const newComment = commentsManager.createComment(chapterId, email, displayName, commentText);
-        
-        // Get all existing comments
-        const allComments = await commentsManager.fetchComments();
-        const updatedComments = [...allComments, newComment];
-        
-        // Download updated comments.json
-        commentsManager.downloadCommentsJSON(updatedComments);
-        
-        // Show success message
-        const successMsg = document.createElement('div');
-        successMsg.className = 'comment-success';
-        successMsg.textContent = 'Comment submitted! Upload the downloaded comments.json file to GitHub for it to appear.';
-        
-        const formContainer = document.querySelector('.comment-form-container');
-        formContainer.insertBefore(successMsg, formContainer.firstChild);
-        
-        // Clear form
-        form.reset();
-        
-        // Remove success message after 10 seconds
-        setTimeout(() => successMsg.remove(), 10000);
+        try {
+            // Submit comment automatically to GitHub
+            await commentsManager.submitComment(chapterId, email, displayName, commentText);
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'comment-success';
+            successMsg.textContent = 'Comment posted successfully! It may take 1-2 minutes to appear.';
+            
+            const formContainer = document.querySelector('.comment-form-container');
+            formContainer.insertBefore(successMsg, formContainer.firstChild);
+            
+            // Clear form
+            form.reset();
+            
+            // Reload comments after 3 seconds
+            setTimeout(async () => {
+                await loadComments(chapterId);
+                successMsg.remove();
+            }, 3000);
+            
+        } catch (error) {
+            // Show error message
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'comment-error';
+            errorMsg.textContent = 'Failed to post comment. Please try again later.';
+            
+            const formContainer = document.querySelector('.comment-form-container');
+            formContainer.insertBefore(errorMsg, formContainer.firstChild);
+            
+            setTimeout(() => errorMsg.remove(), 5000);
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post Comment';
+        }
     });
 }

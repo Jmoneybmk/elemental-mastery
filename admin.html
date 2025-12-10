@@ -146,13 +146,16 @@ You can include multiple paragraphs."></textarea>
             <div class="admin-section">
                 <h2 class="section-heading">Reader Comments</h2>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                    View all comments from readers. Emails are visible only to you. To approve/delete comments, download the updated comments.json and upload it to GitHub.
+                    Comments are automatically posted by readers. Emails are visible only to you.
                 </p>
-                <div class="comment-stats" style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                <div class="comment-stats" style="display: flex; gap: 2rem; margin-bottom: 2rem; align-items: center;">
                     <div style="background: var(--void-deep); padding: 1rem; border-radius: 8px; flex: 1;">
                         <div style="color: var(--light-gold); font-size: 2rem; font-family: 'Cinzel', serif;" id="totalComments">0</div>
                         <div style="color: var(--text-dim); font-size: 0.9rem;">Total Comments</div>
                     </div>
+                    <button onclick="commentsManager.downloadAllComments()" class="admin-btn secondary">
+                        💾 Backup All Comments
+                    </button>
                 </div>
                 <div id="commentsManageList" class="manage-list"></div>
             </div>
@@ -178,7 +181,7 @@ You can include multiple paragraphs."></textarea>
 
     <script src="js/admin-auth.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/comments.js"></script>
+    <script src="js/auto-comments.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>
