@@ -4,7 +4,7 @@ class AdminAuth {
         // Password hash stored here - users can't reverse this to get the actual password
         // Default password: "VoidWalker2025"
         // To change password, use: generatePasswordHash("your-new-password") in console
-        this.passwordHash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'; // SHA-256 hash
+        this.passwordHash = '39c2e8cfe5881f77bb87dc3ef675ab06b0a916450749f5f55ebc6a8a0ee6cede'; // SHA-256 hash
         this.sessionKey = 'adminAuthenticated';
         this.sessionTimeout = 3600000; // 1 hour in milliseconds
     }
