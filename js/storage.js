@@ -15,13 +15,23 @@ class GitHubContentManager {
 
     // Fetch data from GitHub JSON files
     async fetchData(type) {
-        // Return cached data if available
+        // Return cached data if available (for this session)
         if (this.cache[type]) {
             return this.cache[type];
         }
 
         try {
-            const response = await fetch(this.dataFiles[type]);
+            // Add cache busting timestamp to force fresh data
+            const timestamp = new Date().getTime();
+            const url = `${this.dataFiles[type]}?v=${timestamp}`;
+            
+            const response = await fetch(url, {
+                cache: 'no-store',  // Don't use browser cache
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
             if (!response.ok) {
                 // If file doesn't exist yet, return empty array
                 if (response.status === 404) {
