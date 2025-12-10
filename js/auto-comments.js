@@ -4,7 +4,7 @@ class AutoCommentsManager {
         // GitHub configuration - YOU NEED TO SET THESE
         this.githubUsername = 'Jmoneybmk'; // e.g., 'BigDomo'
         this.repoName = 'elemental-mastery'; // e.g., 'elemental-mastery'
-        this.githubToken = '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'; // Get from GitHub Settings
+        this.githubToken = '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'; // Get from GitHub Settings
         
         this.commentsFile = 'data/comments.json';
         this.cache = null;
