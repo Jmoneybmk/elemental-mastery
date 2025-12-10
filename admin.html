@@ -41,6 +41,7 @@
             <button class="tab-btn active" data-tab="chapters">📖 Chapters</button>
             <button class="tab-btn" data-tab="gallery">🎨 Gallery</button>
             <button class="tab-btn" data-tab="news">📰 News</button>
+            <button class="tab-btn" data-tab="comments">💬 Comments</button>
         </div>
 
         <!-- Chapters Tab -->
@@ -139,6 +140,23 @@ You can include multiple paragraphs."></textarea>
                 <div id="newsManageList" class="manage-list"></div>
             </div>
         </div>
+
+        <!-- Comments Tab -->
+        <div id="commentsTab" class="tab-content">
+            <div class="admin-section">
+                <h2 class="section-heading">Reader Comments</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    View all comments from readers. Emails are visible only to you. To approve/delete comments, download the updated comments.json and upload it to GitHub.
+                </p>
+                <div class="comment-stats" style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                    <div style="background: var(--void-deep); padding: 1rem; border-radius: 8px; flex: 1;">
+                        <div style="color: var(--light-gold); font-size: 2rem; font-family: 'Cinzel', serif;" id="totalComments">0</div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">Total Comments</div>
+                    </div>
+                </div>
+                <div id="commentsManageList" class="manage-list"></div>
+            </div>
+        </div>
     </section>
 
     <footer class="main-footer" style="margin-top: 4rem;">
@@ -158,7 +176,9 @@ You can include multiple paragraphs."></textarea>
 
     <input type="file" id="importFile" accept=".json" style="display: none;">
 
+    <script src="js/admin-auth.js"></script>
     <script src="js/storage.js"></script>
+    <script src="js/comments.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>

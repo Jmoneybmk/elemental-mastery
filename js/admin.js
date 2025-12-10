@@ -114,6 +114,7 @@ async function loadAllManageLists() {
     await loadChaptersManageList();
     await loadGalleryManageList();
     await loadNewsManageList();
+    await loadCommentsManageList();
 }
 
 // Chapters Management
@@ -295,6 +296,57 @@ function truncate(text, maxLength) {
 // Refresh button to reload data
 function refreshData() {
     contentManager.clearCache();
+    commentsManager.clearCache();
     loadAllManageLists();
     showMessage('success', 'Data refreshed from GitHub!');
+}
+
+// Comments Management
+async function loadCommentsManageList() {
+    const container = document.getElementById('commentsManageList');
+    const totalCounter = document.getElementById('totalComments');
+    const comments = await commentsManager.fetchComments();
+    
+    if (totalCounter) {
+        totalCounter.textContent = comments.length;
+    }
+    
+    if (comments.length === 0) {
+        container.innerHTML = '<div class="empty-manage"><p>No comments yet.</p></div>';
+        return;
+    }
+
+    // Get chapter titles for display
+    const chapters = await contentManager.getChapters();
+    const chapterMap = {};
+    chapters.forEach(ch => {
+        chapterMap[ch.id] = `Chapter ${ch.number}: ${ch.title}`;
+    });
+
+    container.innerHTML = comments.map(comment => `
+        <div class="manage-item" style="background: var(--void-deep);">
+            <div class="manage-item-info">
+                <div class="manage-item-title">${escapeHtml(comment.displayName)}</div>
+                <div class="manage-item-meta">
+                    <span>📧 ${escapeHtml(comment.email)}</span>
+                    <span>📅 ${commentsManager.formatDate(comment.timestamp)}</span>
+                    <span>📖 ${chapterMap[comment.chapterId] || 'Unknown Chapter'}</span>
+                </div>
+                <div class="manage-item-excerpt">${escapeHtml(comment.comment)}</div>
+            </div>
+            <div class="manage-item-actions">
+                <button onclick="deleteComment('${comment.id}')" class="admin-btn danger small">🗑 Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function deleteComment(id) {
+    if (confirm('This will generate a new comments.json file without this comment. You must upload it to GitHub to complete the deletion.')) {
+        const comments = await commentsManager.fetchComments();
+        const updatedComments = comments.filter(c => c.id !== id);
+        commentsManager.downloadCommentsJSON(updatedComments);
+        showMessage('success', 'Download the new comments.json and upload it to GitHub to complete the deletion.');
+        showUploadInstructions('comments');
+    }
 }

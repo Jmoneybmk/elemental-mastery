@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     await loadChapter();
     setupReadingProgress();
+    setupCommentForm();
 });
 
 async function loadChapter() {
@@ -27,6 +28,9 @@ async function loadChapter() {
     displayChapterHeader(chapter);
     displayChapterContent(chapter);
     await displayChapterNavigation(chapter);
+    
+    // Load comments
+    await loadComments(chapterId);
     
     // Update page title
     document.title = `Chapter ${chapter.number}: ${chapter.title} - Elemental Mastery`;
@@ -146,3 +150,69 @@ document.addEventListener('keydown', (e) => {
         if (nextBtn) nextBtn.click();
     }
 });
+
+// Comments Functionality
+async function loadComments(chapterId) {
+    const container = document.getElementById('commentsList');
+    const comments = await commentsManager.getCommentsForChapter(chapterId);
+    
+    if (comments.length === 0) {
+        container.innerHTML = `
+            <div class="comments-empty">
+                <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = comments.map(comment => `
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-author">${escapeHtml(comment.displayName)}</div>
+                <div class="comment-date">${commentsManager.formatDate(comment.timestamp)}</div>
+            </div>
+            <div class="comment-text">${escapeHtml(comment.comment)}</div>
+        </div>
+    `).join('');
+}
+
+function setupCommentForm() {
+    const form = document.getElementById('commentForm');
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const chapterId = urlParams.get('id');
+        
+        if (!chapterId) return;
+        
+        const email = document.getElementById('commentEmail').value;
+        const displayName = document.getElementById('commentName').value;
+        const commentText = document.getElementById('commentText').value;
+        
+        // Create comment data
+        const newComment = commentsManager.createComment(chapterId, email, displayName, commentText);
+        
+        // Get all existing comments
+        const allComments = await commentsManager.fetchComments();
+        const updatedComments = [...allComments, newComment];
+        
+        // Download updated comments.json
+        commentsManager.downloadCommentsJSON(updatedComments);
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'comment-success';
+        successMsg.textContent = 'Comment submitted! Upload the downloaded comments.json file to GitHub for it to appear.';
+        
+        const formContainer = document.querySelector('.comment-form-container');
+        formContainer.insertBefore(successMsg, formContainer.firstChild);
+        
+        // Clear form
+        form.reset();
+        
+        // Remove success message after 10 seconds
+        setTimeout(() => successMsg.remove(), 10000);
+    });
+}
