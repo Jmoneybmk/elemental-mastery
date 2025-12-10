@@ -312,6 +312,40 @@
     font-size: 1.1rem;
 }
 
+/* Upload Instructions */
+.upload-instructions {
+    background: linear-gradient(135deg, rgba(107, 70, 193, 0.1), rgba(212, 175, 55, 0.1));
+    border: 2px solid var(--light-gold);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.upload-instructions h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--light-gold);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.upload-instructions ol {
+    margin: 1.5rem 0 1.5rem 1.5rem;
+    color: var(--text-primary);
+}
+
+.upload-instructions li {
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
+}
+
+.upload-instructions strong {
+    color: var(--light-gold);
+}
+
+.upload-instructions button {
+    margin-top: 1rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .admin-container {

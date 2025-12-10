@@ -1,10 +1,10 @@
 // Chapters Page Logic
-document.addEventListener('DOMContentLoaded', () => {
-    loadChapters();
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadChapters();
 });
 
-function loadChapters() {
-    const chapters = contentManager.getChapters();
+async function loadChapters() {
+    const chapters = await contentManager.getChapters();
     
     if (chapters.length === 0) {
         displayEmptyState();
@@ -67,7 +67,6 @@ function displayEmptyState() {
         <div class="empty-state">
             <h3>No Chapters Yet</h3>
             <p>The story begins soon. Check back for the first chapter!</p>
-            <a href="admin.html" class="btn-primary">Publish First Chapter</a>
         </div>
     `;
 }

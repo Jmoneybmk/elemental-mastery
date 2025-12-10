@@ -1,18 +1,17 @@
 // News Page Logic
-document.addEventListener('DOMContentLoaded', () => {
-    loadNews();
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadNews();
 });
 
-function loadNews() {
+async function loadNews() {
     const container = document.getElementById('newsTimeline');
-    const news = contentManager.getNews();
+    const news = await contentManager.getNews();
     
     if (news.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <h3>No Updates Yet</h3>
                 <p>News and updates will appear here.</p>
-                <a href="admin.html" class="btn-primary">Post First Update</a>
             </div>
         `;
         return;

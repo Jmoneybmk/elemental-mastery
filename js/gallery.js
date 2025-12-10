@@ -1,39 +1,38 @@
 // Gallery Page Logic
 let currentCategory = 'all';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     setupFilters();
-    loadGallery();
+    await loadGallery();
     setupLightbox();
 });
 
 function setupFilters() {
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             // Update active state
             filterButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             // Update category and reload
             currentCategory = btn.dataset.category;
-            loadGallery();
+            await loadGallery();
         });
     });
 }
 
-function loadGallery() {
+async function loadGallery() {
     const container = document.getElementById('galleryGrid');
     const gallery = currentCategory === 'all' 
-        ? contentManager.getGallery() 
-        : contentManager.getGallery(currentCategory);
+        ? await contentManager.getGallery() 
+        : await contentManager.getGallery(currentCategory);
     
     if (gallery.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1;">
                 <h3>No Artwork Yet</h3>
                 <p>Gallery items will appear here once uploaded.</p>
-                ${currentCategory === 'all' ? '<a href="admin.html" class="btn-primary">Upload Artwork</a>' : ''}
             </div>
         `;
         return;
@@ -71,8 +70,8 @@ function setupLightbox() {
     });
 }
 
-function openLightbox(artId) {
-    const gallery = contentManager.getGallery();
+async function openLightbox(artId) {
+    const gallery = await contentManager.getGallery();
     const art = gallery.find(item => item.id === artId);
     
     if (!art) return;

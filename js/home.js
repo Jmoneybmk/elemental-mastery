@@ -1,19 +1,18 @@
 // Home Page Display Logic
-document.addEventListener('DOMContentLoaded', () => {
-    displayLatestChapter();
-    displayFeaturedArt();
-    displayLatestNews();
+document.addEventListener('DOMContentLoaded', async () => {
+    await displayLatestChapter();
+    await displayFeaturedArt();
+    await displayLatestNews();
 });
 
-function displayLatestChapter() {
+async function displayLatestChapter() {
     const container = document.getElementById('latestChapterDisplay');
-    const chapters = contentManager.getChapters();
+    const chapters = await contentManager.getChapters();
     
     if (chapters.length === 0) {
         container.innerHTML = `
             <div class="loading-state">
                 <p>No chapters published yet. Check back soon!</p>
-                <a href="admin.html" class="btn-primary" style="margin-top: 1rem;">Publish Your First Chapter</a>
             </div>
         `;
         return;
@@ -31,9 +30,9 @@ function displayLatestChapter() {
     `;
 }
 
-function displayFeaturedArt() {
+async function displayFeaturedArt() {
     const container = document.getElementById('featuredArtDisplay');
-    const gallery = contentManager.getGallery();
+    const gallery = await contentManager.getGallery();
     
     if (gallery.length === 0) {
         container.innerHTML = `
@@ -57,9 +56,9 @@ function displayFeaturedArt() {
     `).join('');
 }
 
-function displayLatestNews() {
+async function displayLatestNews() {
     const container = document.getElementById('latestNewsDisplay');
-    const news = contentManager.getNews();
+    const news = await contentManager.getNews();
     
     if (news.length === 0) {
         container.innerHTML = `

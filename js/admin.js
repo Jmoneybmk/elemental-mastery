@@ -1,8 +1,12 @@
-// Admin Panel Logic
-document.addEventListener('DOMContentLoaded', () => {
+// Admin Panel Logic - GitHub Version
+let pendingChapters = [];
+let pendingGallery = [];
+let pendingNews = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
     setupTabs();
     setupForms();
-    loadAllManageLists();
+    await loadAllManageLists();
 });
 
 // Tab Management
@@ -14,7 +18,6 @@ function setupTabs() {
         btn.addEventListener('click', () => {
             const targetTab = btn.dataset.tab;
             
-            // Update active states
             tabButtons.forEach(b => b.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
             
@@ -27,7 +30,7 @@ function setupTabs() {
 // Form Setup
 function setupForms() {
     // Chapter Form
-    document.getElementById('chapterForm').addEventListener('submit', (e) => {
+    document.getElementById('chapterForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const chapter = {
@@ -37,19 +40,24 @@ function setupForms() {
             excerpt: document.getElementById('chapterExcerpt').value || null
         };
         
-        const result = contentManager.addChapter(chapter);
+        const newChapter = contentManager.createChapterData(chapter);
+        pendingChapters.push(newChapter);
         
-        if (result) {
-            showMessage('success', 'Chapter published successfully!');
-            e.target.reset();
-            loadChaptersManageList();
-        } else {
-            showMessage('error', 'Failed to publish chapter. Please try again.');
-        }
+        // Download updated JSON file
+        const allChapters = await contentManager.getChapters();
+        const updatedChapters = [...allChapters, newChapter];
+        contentManager.downloadJSON('chapters', updatedChapters);
+        
+        showMessage('success', 'Chapter created! Upload the downloaded chapters.json file to your GitHub repository in the /data folder.');
+        e.target.reset();
+        
+        setTimeout(() => {
+            showUploadInstructions('chapters');
+        }, 1000);
     });
     
     // Gallery Form
-    document.getElementById('galleryForm').addEventListener('submit', (e) => {
+    document.getElementById('galleryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const artwork = {
@@ -59,19 +67,24 @@ function setupForms() {
             description: document.getElementById('artDescription').value || null
         };
         
-        const result = contentManager.addGalleryItem(artwork);
+        const newArt = contentManager.createGalleryData(artwork);
+        pendingGallery.push(newArt);
         
-        if (result) {
-            showMessage('success', 'Artwork added to gallery!');
-            e.target.reset();
-            loadGalleryManageList();
-        } else {
-            showMessage('error', 'Failed to add artwork. Please try again.');
-        }
+        // Download updated JSON file
+        const allGallery = await contentManager.getGallery();
+        const updatedGallery = [...allGallery, newArt];
+        contentManager.downloadJSON('gallery', updatedGallery);
+        
+        showMessage('success', 'Artwork created! Upload the downloaded gallery.json file to your GitHub repository in the /data folder.');
+        e.target.reset();
+        
+        setTimeout(() => {
+            showUploadInstructions('gallery');
+        }, 1000);
     });
     
     // News Form
-    document.getElementById('newsForm').addEventListener('submit', (e) => {
+    document.getElementById('newsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const news = {
@@ -79,29 +92,34 @@ function setupForms() {
             content: document.getElementById('newsContent').value
         };
         
-        const result = contentManager.addNews(news);
+        const newNews = contentManager.createNewsData(news);
+        pendingNews.push(newNews);
         
-        if (result) {
-            showMessage('success', 'Update published successfully!');
-            e.target.reset();
-            loadNewsManageList();
-        } else {
-            showMessage('error', 'Failed to publish update. Please try again.');
-        }
+        // Download updated JSON file
+        const allNews = await contentManager.getNews();
+        const updatedNews = [...allNews, newNews];
+        contentManager.downloadJSON('news', updatedNews);
+        
+        showMessage('success', 'Update created! Upload the downloaded news.json file to your GitHub repository in the /data folder.');
+        e.target.reset();
+        
+        setTimeout(() => {
+            showUploadInstructions('news');
+        }, 1000);
     });
 }
 
 // Load All Manage Lists
-function loadAllManageLists() {
-    loadChaptersManageList();
-    loadGalleryManageList();
-    loadNewsManageList();
+async function loadAllManageLists() {
+    await loadChaptersManageList();
+    await loadGalleryManageList();
+    await loadNewsManageList();
 }
 
 // Chapters Management
-function loadChaptersManageList() {
+async function loadChaptersManageList() {
     const container = document.getElementById('chaptersManageList');
-    const chapters = contentManager.getChapters();
+    const chapters = await contentManager.getChapters();
     
     if (chapters.length === 0) {
         container.innerHTML = '<div class="empty-manage"><p>No chapters published yet.</p></div>';
@@ -126,21 +144,20 @@ function loadChaptersManageList() {
     `).join('');
 }
 
-function deleteChapter(id) {
-    if (confirm('Are you sure you want to delete this chapter? This cannot be undone!')) {
-        if (contentManager.deleteChapter(id)) {
-            showMessage('success', 'Chapter deleted successfully.');
-            loadChaptersManageList();
-        } else {
-            showMessage('error', 'Failed to delete chapter.');
-        }
+async function deleteChapter(id) {
+    if (confirm('This will generate a new chapters.json file without this chapter. You must upload it to GitHub to complete the deletion.')) {
+        const chapters = await contentManager.getChapters();
+        const updatedChapters = chapters.filter(ch => ch.id !== id);
+        contentManager.downloadJSON('chapters', updatedChapters);
+        showMessage('success', 'Download the new chapters.json and upload it to GitHub to complete the deletion.');
+        showUploadInstructions('chapters');
     }
 }
 
 // Gallery Management
-function loadGalleryManageList() {
+async function loadGalleryManageList() {
     const container = document.getElementById('galleryManageList');
-    const gallery = contentManager.getGallery();
+    const gallery = await contentManager.getGallery();
     
     if (gallery.length === 0) {
         container.innerHTML = '<div class="empty-manage"><p>No artwork uploaded yet.</p></div>';
@@ -167,21 +184,20 @@ function loadGalleryManageList() {
     `).join('');
 }
 
-function deleteGalleryItem(id) {
-    if (confirm('Are you sure you want to delete this artwork?')) {
-        if (contentManager.deleteGalleryItem(id)) {
-            showMessage('success', 'Artwork deleted successfully.');
-            loadGalleryManageList();
-        } else {
-            showMessage('error', 'Failed to delete artwork.');
-        }
+async function deleteGalleryItem(id) {
+    if (confirm('This will generate a new gallery.json file without this item. You must upload it to GitHub to complete the deletion.')) {
+        const gallery = await contentManager.getGallery();
+        const updatedGallery = gallery.filter(item => item.id !== id);
+        contentManager.downloadJSON('gallery', updatedGallery);
+        showMessage('success', 'Download the new gallery.json and upload it to GitHub to complete the deletion.');
+        showUploadInstructions('gallery');
     }
 }
 
 // News Management
-function loadNewsManageList() {
+async function loadNewsManageList() {
     const container = document.getElementById('newsManageList');
-    const news = contentManager.getNews();
+    const news = await contentManager.getNews();
     
     if (news.length === 0) {
         container.innerHTML = '<div class="empty-manage"><p>No updates posted yet.</p></div>';
@@ -204,38 +220,44 @@ function loadNewsManageList() {
     `).join('');
 }
 
-function deleteNews(id) {
-    if (confirm('Are you sure you want to delete this update?')) {
-        if (contentManager.deleteNews(id)) {
-            showMessage('success', 'Update deleted successfully.');
-            loadNewsManageList();
-        } else {
-            showMessage('error', 'Failed to delete update.');
-        }
+async function deleteNews(id) {
+    if (confirm('This will generate a new news.json file without this update. You must upload it to GitHub to complete the deletion.')) {
+        const news = await contentManager.getNews();
+        const updatedNews = news.filter(item => item.id !== id);
+        contentManager.downloadJSON('news', updatedNews);
+        showMessage('success', 'Download the new news.json and upload it to GitHub to complete the deletion.');
+        showUploadInstructions('news');
     }
 }
 
-// Import Data
-function importData() {
-    const input = document.getElementById('importFile');
-    input.click();
+// Show upload instructions modal
+function showUploadInstructions(type) {
+    const instructions = `
+        <div class="upload-instructions">
+            <h3>📤 Next Step: Upload to GitHub</h3>
+            <ol>
+                <li>Find the downloaded <strong>${type}.json</strong> file in your Downloads folder</li>
+                <li>Go to your GitHub repository</li>
+                <li>Navigate to the <strong>data</strong> folder</li>
+                <li>Click "Upload files" or drag and drop <strong>${type}.json</strong></li>
+                <li>Replace the existing file</li>
+                <li>Scroll down and click "Commit changes"</li>
+                <li>Wait 1-2 minutes for GitHub Pages to update</li>
+                <li>Refresh this page to see your changes!</li>
+            </ol>
+            <button onclick="this.parentElement.remove()" class="admin-btn primary">Got it!</button>
+        </div>
+    `;
     
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const jsonData = event.target.result;
-            if (contentManager.importData(jsonData)) {
-                showMessage('success', 'Data imported successfully!');
-                loadAllManageLists();
-            } else {
-                showMessage('error', 'Failed to import data. Please check the file format.');
-            }
-        };
-        reader.readAsText(file);
-    };
+    const activeTab = document.querySelector('.tab-content.active');
+    const existingInstructions = activeTab.querySelector('.upload-instructions');
+    if (existingInstructions) {
+        existingInstructions.remove();
+    }
+    
+    const div = document.createElement('div');
+    div.innerHTML = instructions;
+    activeTab.insertBefore(div.firstElementChild, activeTab.firstChild);
 }
 
 // Utility Functions
@@ -251,11 +273,12 @@ function showMessage(type, text) {
     message.className = `message ${type}`;
     message.textContent = text;
     
-    activeTab.insertBefore(message, activeTab.firstChild);
+    const firstSection = activeTab.querySelector('.admin-section');
+    firstSection.insertBefore(message, firstSection.firstChild);
     
     setTimeout(() => {
         message.remove();
-    }, 5000);
+    }, 8000);
 }
 
 function escapeHtml(text) {
@@ -267,4 +290,11 @@ function escapeHtml(text) {
 function truncate(text, maxLength) {
     if (text.length <= maxLength) return text;
     return text.substr(0, maxLength).trim() + '...';
+}
+
+// Refresh button to reload data
+function refreshData() {
+    contentManager.clearCache();
+    loadAllManageLists();
+    showMessage('success', 'Data refreshed from GitHub!');
 }

@@ -1,10 +1,10 @@
 // Reading Page Logic
-document.addEventListener('DOMContentLoaded', () => {
-    loadChapter();
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadChapter();
     setupReadingProgress();
 });
 
-function loadChapter() {
+async function loadChapter() {
     const urlParams = new URLSearchParams(window.location.search);
     const chapterId = urlParams.get('id');
     
@@ -13,7 +13,7 @@ function loadChapter() {
         return;
     }
     
-    const chapter = contentManager.getChapter(chapterId);
+    const chapter = await contentManager.getChapter(chapterId);
     
     if (!chapter) {
         displayNotFound();
@@ -21,12 +21,12 @@ function loadChapter() {
     }
     
     // Increment view count
-    contentManager.incrementChapterViews(chapterId);
+    await contentManager.incrementChapterViews(chapterId);
     
     // Display chapter
     displayChapterHeader(chapter);
     displayChapterContent(chapter);
-    displayChapterNavigation(chapter);
+    await displayChapterNavigation(chapter);
     
     // Update page title
     document.title = `Chapter ${chapter.number}: ${chapter.title} - Elemental Mastery`;
@@ -61,9 +61,9 @@ function displayChapterContent(chapter) {
     container.innerHTML = content;
 }
 
-function displayChapterNavigation(currentChapter) {
+async function displayChapterNavigation(currentChapter) {
     const container = document.getElementById('chapterNav');
-    const chapters = contentManager.getChapters();
+    const chapters = await contentManager.getChapters();
     
     const currentIndex = chapters.findIndex(ch => ch.id === currentChapter.id);
     const prevChapter = currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null;
